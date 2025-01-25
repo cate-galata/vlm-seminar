@@ -1,16 +1,22 @@
 cls:
   img_size: 224
   backbone: resnet_50 #resnet and vit are supported
+  # backbone: vit_base
   multilabel: True
   embed_dim: 128  
-  in_features: 2048
+  in_features: 2048 #resnet_50
+  # in_features: 768 #vit_base
   num_classes: 5
   pretrained: True
   freeze: True
-  checkpoint: /home/june/Code/MGCA-main/data/ckpts/resnet_50.ckpt
-  lr: 5.0e-4
-  dropout: 0.0
+  # checkpoint: /u/home/galc/VLP-Seminar/pretrained/convirt-vit/epoch=17-step=31949.ckpt # CONVIRT
+  checkpoint: /u/home/galc/VLP-Seminar/pretrained/medclip/pytorch_model.bin # MEDCLIP
+  lr: 1.0e-4
+  dropout: 0.2
   weight_decay: 1.0e-6
+  # hidden_dim: 1024
+  # finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/chexpert/2025_01_13_17_11_53/epoch=19-step=58039.ckpt # CONVIRT
+  finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/chexpert/2025_01_21_19_05_29/epoch=18-step=55137.ckpt # MEDCLIP
 
 
 dataset:
@@ -19,10 +25,11 @@ dataset:
   CHEXPERT_PATH_COL: Path
   CHEXPERT_SPLIT_COL: Split
   img_size: 224
-  dataset_dir: /u/home/lj0/datasets/cheXpert_small/CheXpert-v1.0-small
-  train_csv: /u/home/lj0/Code/VLP-Seminars/annotations/checkpert/train_split.csv
-  valid_csv: /u/home/lj0/Code/VLP-Seminars/annotations/checkpert/valid_split.csv
-  test_csv: /u/home/lj0/datasets/cheXpert_small/CheXpert-v1.0-small/valid.csv
+  dataset_dir: /u/home/galc/datasets/chexpert
+  train_csv: /u/home/galc/VLP-Seminar/annotations/checkpert/train_split.csv
+  valid_csv: /u/home/galc/VLP-Seminar/annotations/checkpert/valid_split.csv
+  # valid_csv: /u/home/galc/VLP-Seminar/annotations/checkpert/balanced_dataset.csv
+  test_csv: /u/home/galc/datasets/chexpert_small/CheXpert-v1.0-small/valid.csv
   CHEXPERT_COMPETITION_TASKS: # follow mgca, only compare with these tasks
     - Atelectasis
     - Cardiomegaly

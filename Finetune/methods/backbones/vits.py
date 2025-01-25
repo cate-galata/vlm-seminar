@@ -69,6 +69,7 @@ class Attention(nn.Module):
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
+        # print(register_hook)
 
         if register_hook:
             self.save_attention_map(attn)
@@ -105,6 +106,7 @@ class Block(nn.Module):
         x = x + self.drop_path(self.attn(self.norm1(x),
                                register_hook=register_hook))
         x = x + self.drop_path(self.mlp(self.norm2(x)))
+        # att_map = self.attn.attention_map
         return x
 
 

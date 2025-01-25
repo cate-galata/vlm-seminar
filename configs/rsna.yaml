@@ -1,23 +1,29 @@
 dataset:
   img_size: 224
-  dataset_dir: /u/home/lj0/datasets/RSNA_Pneumoni
-  train_csv: /u/home/lj0/Code/VLP-Seminars/annotations/rsna/train.csv
-  valid_csv: /u/home/lj0/Code/VLP-Seminars/annotations/rsna/val.csv
-  test_csv: /u/home/lj0/Code/VLP-Seminars/annotations/rsna/test.csv
+  dataset_dir: /u/home/galc/datasets/rsna/balanced
+  train_csv: /u/home/galc/VLP-Seminar/annotations/rsna/balanced/train.csv
+  valid_csv: /u/home/galc/VLP-Seminar/annotations/rsna/balanced/val.csv
+  test_csv: /u/home/galc/VLP-Seminar/annotations/rsna/balanced/test.csv
   
 cls:
   img_size: 224
-  backbone: resnet_50 #resnet and vit are supported
+  # backbone: resnet_50 #resnet and vit are supported
+  backbone: vit_base
   multilabel: False
   embed_dim: 128  
-  in_features: 2048
+  # in_features: 2048 #resnet
+  in_features: 768 #vit
   num_classes: 2
-  pretrained: True
+  pretrained: False
   freeze: True
-  checkpoint: /home/june/Code/MGCA-main/data/ckpts/resnet_50.ckpt
-  lr: 5.0e-4
-  dropout: 0.0
+  # checkpoint: /u/home/galc/VLP-Seminar/pretrained/convirt-vit/epoch=17-step=31949.ckpt # CONVIRT
+  checkpoint: /u/home/galc/VLP-Seminar/pretrained/medclip/pytorch_model.bin # MEDCLIP
+  lr: 1.0e-4
+  dropout: 0.2
   weight_decay: 1.0e-6
+  # hidden_dim: 1024
+  # finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/rsna/2025_01_17_17_58_24/epoch=12-step=3782.ckpt # CONVIRT
+  finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/rsna/2025_01_19_13_03_24/epoch=37-step=11057.ckpt # MEDCLIP
 
 det:
     img_size: 224
@@ -30,7 +36,8 @@ det:
     pretrained: True
     freeze: True
     max_objects: 10
-    checkpoint: /home/june/Code/MGCA-main/data/ckpts/resnet_50.ckpt
+    # checkpoint: /home/june/Code/MGCA-main/data/ckpts/resnet_50.ckpt
+    checkpoint: /u/home/galc/mgca-modified/data/ckpts/ConVIRT/2024_12_25_14_19_23/epoch=17-step=31949.ckpt
   
 seg:
     img_size: 224 #224 for vit

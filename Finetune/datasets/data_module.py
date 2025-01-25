@@ -63,7 +63,8 @@ class DataModule(pl.LightningDataModule):
             pin_memory=True,
             shuffle=False,
             collate_fn=self.collate_fn,
-            batch_size=self.batch_size,
+            # batch_size=self.batch_size,
+            batch_size=1,
             num_workers=self.num_workers
         )
 

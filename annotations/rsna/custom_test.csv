@@ -1,0 +1,4 @@
+path,patientId,label,bbox
+/u/home/galc/datasets/rsna/stage_2_train_images/7798d157-4dbf-402c-8b93-d3b97cb29d64.dcm,7798d157-4dbf-402c-8b93-d3b97cb29d64,1,"[[156.0, 263.0, 357.0, 506.0]]"
+/u/home/galc/datasets/rsna/stage_2_train_images/70e3331c-8717-4ff6-b2b5-0fefe6336bdc.dcm,70e3331c-8717-4ff6-b2b5-0fefe6336bdc,1,"[[553.0, 326.0, 780.0, 782.0], [231.0, 374.0, 448.0, 775.0]]"
+/u/home/galc/datasets/rsna/stage_2_train_images/0a41d5c4-83b0-43e4-b98f-be69dcdd4636.dcm,0a41d5c4-83b0-43e4-b98f-be69dcdd4636,0,"[[0.0, 0.0, 0.0, 0.0]]"

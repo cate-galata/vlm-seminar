@@ -3,9 +3,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
-from torchmetrics import AUROC, Accuracy
+from torchmetrics import AUROC, Accuracy, Recall
 # from .backbones.encoder import ImageEncoder
 from methods.backbones.encoder import ImageEncoder
+import json
 
 
 class FinetuneClassifier(LightningModule):
@@ -23,20 +24,31 @@ class FinetuneClassifier(LightningModule):
         self.weight_decay = config["cls"].get("weight_decay", 1e-6)
         self.multilabel = config["cls"].get("multilabel", False)
         self.model_name = config["cls"].get("model_name", "resnet_50")
+        self.validation_losses = []
+        self.test_losses = []
 
         # Initialize metrics based on task type
         if self.multilabel and self.num_classes > 1:
             self.train_auc = AUROC(task='multilabel', num_labels=self.num_classes)
-            self.val_auc = AUROC(task='multilabel', num_labels=self.num_classes, compute_on_step=False)
-            self.test_auc = AUROC(task='multilabel', num_labels=self.num_classes, compute_on_step=False)
+            # self.val_auc = AUROC(task='multilabel', num_labels=self.num_classes, compute_on_step=False)
+            # self.test_auc = AUROC(task='multilabel', num_labels=self.num_classes, compute_on_step=False)
+            self.val_auc = AUROC(task='multilabel', num_labels=self.num_classes)
+            self.test_auc = AUROC(task='multilabel', num_labels=self.num_classes)
+
+            self.train_recall = Recall(task='multilabel',num_labels=self.num_classes)
+            self.val_recall = Recall(task='multilabel',num_labels=self.num_classes)
+            self.test_recall = Recall(task='multilabel',num_labels=self.num_classes)
         else:
             task_type = 'binary' if self.num_classes == 2 else 'multiclass'
-            # self.train_auc = AUROC(task=task_type, num_classes=self.num_classes)
-            # self.val_auc = AUROC(task=task_type, num_classes=self.num_classes, compute_on_step=False)
-            # self.test_auc = AUROC(task=task_type, num_classes=self.num_classes, compute_on_step=False)
             self.train_acc = Accuracy(task=task_type,num_classes=self.num_classes)
-            self.val_acc = Accuracy(task=task_type,num_classes=self.num_classes, compute_on_step=False)
-            self.test_acc = Accuracy(task=task_type,num_classes=self.num_classes, compute_on_step=False)
+            # self.val_acc = Accuracy(task=task_type,num_classes=self.num_classes, compute_on_step=False)
+            # self.test_acc = Accuracy(task=task_type,num_classes=self.num_classes, compute_on_step=False)
+            self.val_acc = Accuracy(task=task_type,num_classes=self.num_classes)
+            self.test_acc = Accuracy(task=task_type,num_classes=self.num_classes)
+
+            self.train_recall = Recall(task=task_type,num_classes=self.num_classes)
+            self.val_recall = Recall(task=task_type,num_classes=self.num_classes)
+            self.test_recall = Recall(task=task_type,num_classes=self.num_classes)
 
         # Initialize the backbone and classification head
         self.img_encoder_q = ImageEncoder(model_name=config["cls"]["backbone"], output_dim=config["cls"]['embed_dim'])
@@ -47,6 +59,23 @@ class FinetuneClassifier(LightningModule):
         self.classification_head = ClassificationHead(
             n_input=self.in_features, n_classes=self.num_classes, p=self.dropout, n_hidden=self.hidden_dim
         )
+
+    def forward(self, x):
+        """
+        Define the forward pass for the model.
+        Args:
+            x (torch.Tensor): The input image tensor (e.g., shape [batch_size, channels, height, width])
+        Returns:
+            torch.Tensor: The logits from the classification head
+        """
+        # Pass the input through the image encoder
+        feats, _ = self.img_encoder_q(x)
+        feats = feats.view(feats.size(0), -1)
+
+        # Pass the features through the classification head
+        logits = self.classification_head(feats)
+
+        return logits
 
     def on_train_batch_start(self, batch, batch_idx) -> None:
         self.img_encoder_q.eval()
@@ -62,11 +91,16 @@ class FinetuneClassifier(LightningModule):
             acc = self.train_acc(preds, y.long())
             self.log("train_acc_step", acc, prog_bar=True, sync_dist=True)
             self.log("train_acc_epoch", self.train_acc, prog_bar=True, sync_dist=True)
+
+            recall = self.train_recall(preds, y.long())
+            self.log("train_recall_step", recall, prog_bar=True, sync_dist=True)
+            self.log("train_recall_epoch", self.train_recall, prog_bar=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         # import pdb; pdb.set_trace()
-        loss, logits,preds, y = self.shared_step(batch)
+        loss, logits, preds, y = self.shared_step(batch)
+
         self.log("val_loss", loss, prog_bar=True, sync_dist=True)
         if self.multilabel:
             self.val_auc(torch.sigmoid(logits).float(), y.long())
@@ -75,10 +109,28 @@ class FinetuneClassifier(LightningModule):
             # self.val_acc(F.softmax(logits, dim=-1).float(), y.long())
             self.val_acc(preds, y.long())
             self.log("val_acc", self.val_acc, on_epoch=True, prog_bar=True, sync_dist=True)
+
+            self.val_recall(preds, y.long())
+            self.log("val_recall", self.val_recall, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def test_step(self, batch, batch_idx):
         loss, logits, preds, y = self.shared_step(batch)
+
+        self.test_losses.append({
+            "batch_idx": batch_idx,
+            "loss": loss.item(), 
+            "preds": preds.cpu().item(),#.tolist(),
+            "labels": y.cpu().item(),#.tolist(),  
+        })
+
+        with open("test_losses/test_losses_imagenet_balanced.json", "a") as f:
+            for entry in self.test_losses:
+                json.dump(entry, f)
+                f.write("\n") 
+        
+        self.test_losses = []
+
         self.log("test_loss", loss, sync_dist=True)
         if self.multilabel:
             self.test_auc(torch.sigmoid(logits).float(), y.long())
@@ -86,14 +138,21 @@ class FinetuneClassifier(LightningModule):
         else:
             self.test_acc(preds, y.long())
             self.log("test_acc", self.test_acc, on_epoch=True)
+
+            self.test_recall(preds, y.long())
+            self.log("test_recall", self.test_recall, on_epoch=True)
         return loss
 
-    def shared_step(self, batch):
+    def shared_step(self, batch, return_embeddings=False):
         x, y = batch #x:(b,3,224,224), y:(b,1)
         # import pdb; pdb.set_trace()
         with torch.no_grad():
-            feats, _ = self.img_encoder_q(x) #resnet50:(48,2048)
+            feats, _ = self.img_encoder_q(x) #resnet50:(48,2048) 
         feats = feats.view(feats.size(0), -1)  #resnet50:(48,2048)
+
+        if return_embeddings:
+            return feats, y
+
         logits = self.classification_head(feats) #resnet50:(48,2048)->(48,1)
         
         # import pdb; pdb.set_trace()
@@ -102,7 +161,7 @@ class FinetuneClassifier(LightningModule):
             loss = F.binary_cross_entropy_with_logits(logits.float(), y.float())
             preds = (torch.sigmoid(logits) > 0.5).float()
         else:
-            y = y.squeeze()
+            y = y.squeeze(-1)
             loss = F.cross_entropy(logits.float(), y.long())
             preds = torch.argmax(logits, dim=1)
         

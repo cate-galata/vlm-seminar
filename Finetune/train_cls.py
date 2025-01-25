@@ -16,6 +16,7 @@ from datasets.data_module import DataModule
 from datasets.transforms import DataTransforms
 from dateutil import tz
 import warnings
+from collections import OrderedDict
 
 warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning, 
@@ -28,9 +29,9 @@ def load_config(config_path):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='PyTorch Lightning Training')
-    parser.add_argument("--dataset", type=str, default="chexpert", help="Dataset to use: chexpert, rsna")
+    parser.add_argument("--dataset", type=str, default="rsna", help="Dataset to use: chexpert, rsna")
     parser.add_argument('--gpus', type=int, default=1, help='Number of GPUs to use (default: 1)')
-    parser.add_argument('--config', type=str, default='../configs/chexpert.yaml', help='Path to config file:chexkpert.yaml, rsna.yaml')
+    parser.add_argument('--config', type=str, default='../configs/rsna.yaml', help='Path to config file:chexkpert.yaml, rsna.yaml')
     parser.add_argument("--batch_size", type=int, default=48, help="Batch size")
     parser.add_argument("--num_workers", type=int, default=16, help="Number of workers for dataloader")
     parser.add_argument("--data_pct", type=float, default=1, help="Percentage of data to use")
@@ -47,7 +48,6 @@ if __name__ == '__main__':
     args = parse_args()
     config = load_config(args.config)
 
-
     if args.dataset == "rsna":
   
         datamodule = DataModule(dataset=RSNAImageClsDataset, 
@@ -62,15 +62,32 @@ if __name__ == '__main__':
     else:
         print("Dataset not supported")
         exit()
-    
+
     if config['cls']['pretrained']:
         checkpoint_path = config['cls']['checkpoint']
         checkpoint = torch.load(checkpoint_path)
         model = FinetuneClassifier(config)
         model_state_dict = model.state_dict()
-        common_keys = set(checkpoint['state_dict'].keys()).intersection(set(model_state_dict.keys()))
+
+        adjusted_checkpoint = OrderedDict()
+
+        if config['cls']['backbone'] == 'vit_base':
+            for k, v in checkpoint['state_dict'].items(): # CONVIRT
+                new_key = k.replace("img_encoder.model", "img_encoder_q.model")  # CONVIRT
+                adjusted_checkpoint[new_key] = v
+
+        else:
+            for k, v in checkpoint.items(): # MEDCLIP
+                new_key = k.replace("vision_model.model", "img_encoder_q.model")  # MEDCLIP
+                adjusted_checkpoint[new_key] = v
+
+        common_keys = set(adjusted_checkpoint.keys()).intersection(set(model_state_dict.keys()))
+        # import pdb; pdb.set_trace()
         print(f"Number of common keys between checkpoint and model: {len(common_keys)}")
-        model.load_state_dict(checkpoint['state_dict'], strict=False)
+        # print("Checkpoint keys:", checkpoint.keys())
+        # print("Checkpoint keys:", adjusted_checkpoint.keys())
+        # print("Model keys:", model_state_dict.keys())
+        model.load_state_dict(adjusted_checkpoint, strict=False)
     else:
         model = FinetuneClassifier(config)
 
@@ -109,3 +126,20 @@ if __name__ == '__main__':
     # test
     trainer.test(model, datamodule, ckpt_path="best")
 
+    # datamodule.prepare_data()
+    # datamodule.setup('fit')
+
+    # train_loader = datamodule.train_dataloader()
+
+    # for batch_idx, (images, labels) in enumerate(train_loader):
+    #     print(f"Batch {batch_idx + 1}:")
+    #     print(f"Images shape: {images.shape}")
+    #     print(f"Labels shape: {labels.shape}")
+    #     print(f"Labels: {labels.squeeze()}")
+    #     if batch_idx == 1:
+    #         break
+
+    # import pdb; pdb.set_trace()
+    # last_batch = list(datamodule.test_dataloader())[-1]
+    # x, y = last_batch
+    # print(f"Last batch: x shape = {x.shape}, y shape = {y.shape}")

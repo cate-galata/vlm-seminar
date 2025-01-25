@@ -7,3 +7,11 @@ data/log_output/*
 # Ignore all __pycache__ directories recursively
 **/__pycache__/
 
+pretrained/convirt-vit/*
+pretrained/medclip-vit/*
+pretrained/medclip/*
+
+
+*.pdf
+*.pkl
+*.json
