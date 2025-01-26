@@ -533,31 +533,6 @@ class SuperviseImageCollator:
             'pixel_values': inputs['pixel_values'],
             'labels': inputs['labels'],
         }
-    """
-    #original function from original repo
-    def __call__(self, batch):
-        inputs = defaultdict(list)
-        for data in batch:
-            inputs['pixel_values'].append(data[0])
-            inputs['labels'].append(data[1])
-
-        #inputs['labels'] = pd.concat(inputs['labels']).astype(int).values
-        inputs['labels'] = torch.stack(inputs['labels']) 
-
-        if self.mode in ['multiclass','binary']:
-            inputs['labels'] = torch.tensor(inputs['labels'].argmax(1), dtype=int)
-        else:
-            inputs['labels'] = torch.tensor(inputs['labels'], dtype=float)
-
-        #print("Collated labels:", inputs['labels']) #sandra
-
-        inputs['pixel_values'] = torch.cat(inputs['pixel_values'], 0)
-        if inputs['pixel_values'].shape[1] == 1: inputs['pixel_values'] = inputs['pixel_values'].repeat((1,3,1,1))
-        return {
-            'pixel_values': inputs['pixel_values'],
-            'labels': inputs['labels'],
-            }
-    """
 
 
 class PromptTuningImageDataset(Dataset):

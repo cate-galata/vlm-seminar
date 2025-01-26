@@ -167,29 +167,6 @@ class MedCLIPModel(nn.Module):
             state_dict = torch.load(os.path.join(checkpoint, constants.WEIGHTS_NAME), map_location=self.device)
             self.load_state_dict(state_dict)
             print('load model weight from:', checkpoint)
-    """
-    #original function from original repo
-    def __init__(self,
-        vision_cls=MedCLIPVisionModel,
-        checkpoint=None,
-        vision_checkpoint=None,
-        logit_scale_init_value=0.07,
-        ) -> None:
-        super().__init__()
-        text_proj_bias = False
-        assert vision_cls in [MedCLIPVisionModel, MedCLIPVisionModelViT], 'vision_cls should be one of [MedCLIPVisionModel, MedCLIPVisionModelViT]'
-
-        self.vision_model = vision_cls(checkpoint=vision_checkpoint)
-        self.text_model = MedCLIPTextModel(proj_bias=False)
-
-        # learnable temperature for contrastive loss
-        self.logit_scale = nn.Parameter(torch.log(torch.tensor(1/logit_scale_init_value)))
-
-        if checkpoint is not None:
-            state_dict = torch.load(os.path.join(checkpoint, constants.WEIGHTS_NAME), map_location=torch.device('cpu'))
-            self.load_state_dict(state_dict)
-            print('load model weight from:', checkpoint)
-        """
 
     def from_pretrained(self, input_dir=None):
         '''
@@ -409,64 +386,6 @@ class SuperviseClassifier(nn.Module):
             outputs['loss_value'] = loss
 
         return outputs
-
-"""
-#original class from original repo
-class SuperviseClassifier(nn.Module):
-    '''take MedCLIP model with linear heads for supervised classification on images.
-    '''
-    def __init__(self,
-        vision_model,
-        num_class=14,
-        input_dim=768,
-        mode=None,
-        **kwargs) -> None:
-        '''args:
-        vision_model: the medclip vision model that encodes input images into embeddings.
-        num_class: number of classes to predict
-        input_dim: the embedding dim before the linear output layer
-        mode: multilabel, multiclass, or binary
-        '''
-        super().__init__()
-        self.model = vision_model
-        self.num_class = num_class
-        assert mode.lower() in ['multiclass','multilabel','binary']
-        self.mode = mode.lower()
-        if num_class > 2:
-            if mode == 'multiclass':
-                self.loss_fn = nn.CrossEntropyLoss()
-            else:
-                self.loss_fn = nn.BCEWithLogitsLoss()
-
-            self.fc = nn.Linear(input_dim, num_class)
-        else:
-            self.loss_fn = nn.BCEWithLogitsLoss()
-            self.fc = nn.Linear(input_dim, 1)
-
-    def forward(self,
-        pixel_values,
-        labels=None,
-        return_loss=True,
-        **kwargs,
-        ):
-        outputs = defaultdict()
-        pixel_values = pixel_values.cuda()
-        # take embeddings before the projection head
-        img_embeds = self.model(pixel_values, project=False)
-        logits = self.fc(img_embeds)
-        outputs['embedding'] = img_embeds
-        outputs['logits'] = logits
-        if labels is not None and return_loss:
-            labels = labels.cuda().float()
-            if len(labels.shape) == 1: labels = labels.view(-1,1)
-            if self.mode == 'multiclass': labels = labels.flatten().long()
-            loss = self.loss_fn(logits, labels)
-            outputs['loss_value'] = loss
-        return outputs
-"""
-
-
-
 
 class PartiallyFixedEmbedding(nn.Module):
     def __init__(self, fixed_weights, num_to_learn):
