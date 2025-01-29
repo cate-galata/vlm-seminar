@@ -115,16 +115,17 @@ class FinetuneClassifier(LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        _, _, img_path = batch
         loss, logits, preds, y = self.shared_step(batch)
 
         self.test_losses.append({
-            "batch_idx": batch_idx,
+            "img_path": img_path,
             "loss": loss.item(), 
             "preds": preds.cpu().item(),#.tolist(),
             "labels": y.cpu().item(),#.tolist(),  
         })
 
-        with open("test_losses/test_losses_imagenet_balanced.json", "a") as f:
+        with open("test_losses/test_losses_convirt_custom.json", "a") as f:
             for entry in self.test_losses:
                 json.dump(entry, f)
                 f.write("\n") 
@@ -144,7 +145,7 @@ class FinetuneClassifier(LightningModule):
         return loss
 
     def shared_step(self, batch, return_embeddings=False):
-        x, y = batch #x:(b,3,224,224), y:(b,1)
+        x, y, _ = batch #x:(b,3,224,224), y:(b,1)
         # import pdb; pdb.set_trace()
         with torch.no_grad():
             feats, _ = self.img_encoder_q(x) #resnet50:(48,2048) 

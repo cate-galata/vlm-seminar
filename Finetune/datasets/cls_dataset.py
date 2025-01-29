@@ -35,7 +35,7 @@ class RSNAImageClsDataset(Dataset):
         y = float(row["label"])
         y = torch.tensor([y])
 
-        return x, y
+        return x, y, img_path
     
 class ChexPertImageClsDataset(Dataset):
     def __init__(self, config,split='train',transform=None,data_pct=1.0) -> None:
