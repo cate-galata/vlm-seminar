@@ -2,21 +2,32 @@
 
 **This repository contains finetune code for the seminar "AI for Vision-Language Models in Medical Imaging (IN2107)." For more information, visit the [VLP Seminar page](https://compai-lab.github.io/teaching/vlm_seminar/).**
 
-The code is designed to fine-tune Vision-Language Pre-trained models for downstream tasks, including classification, segmentation, and detection. You can also develop additional downstream tasks based on this repository.
+NOTE: This repository was modified to use both MedCLIP[1] and ConVIRT[2] method and finetune on RSNA and CheXpert5x200 classification task. 
+
+[1] https://arxiv.org/pdf/2210.10163
+[2] https://arxiv.org/pdf/2010.00747
+
+The main code is designed to fine-tune Vision-Language Pre-trained models for downstream tasks, including classification, segmentation, and detection. You can also develop additional downstream tasks based on this repository.
 
 This project is built upon the code from [MGCA](https://github.com/HKU-MedAI/MGCA). A special thanks to their repository.
 
 # 🗂️ Structure of the Repository
-Here are the base structures of our repository:
+Here are the base structures of our repository including the modifications for MedCLIP and ConVIRT: 
 ```
 .
 ├── annotations # Stores the outputs of the preprocessing and annotations for each dataset.
 ├── configs # Configuration files for each dataset (e.g., chexpert.yaml, rsna.yaml).
 ├── data # Outputs for the model (checkpoints, log outputs).
 ├── Finetune # Main code for fine-tuning the models.
+├── MedCLIP # GitHub Reposity of MedCLIP [3] modified to use ViT backbone on classification finetune task 
 ├── preprocess_datasets # Code to preprocess the downstream datasets.
+├── ViT-GradCAM # GitHub Repository [4] to plot saliency maps
 └── README.md
 ```
+
+[3] https://github.com/RyanWangZf/MedCLIP/tree/main/medclip
+[4] https://github.com/Mikael17125/ViT-GradCAM
+
 
 # 🛠️ Preprocess Datasets
 Here we provide examples for two datasets: RSNA and Chexpert.
