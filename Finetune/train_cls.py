@@ -122,9 +122,10 @@ if __name__ == '__main__':
     
     # train
     # import pdb; pdb.set_trace()
-    trainer.fit(model, datamodule)
+    # trainer.fit(model, datamodule)
     # test
-    trainer.test(model, datamodule, ckpt_path="best")
+    # trainer.test(model, datamodule, ckpt_path="best")
+    trainer.test(model, datamodule, ckpt_path=config['cls']['finetuned_checkpoint'])
 
     # datamodule.prepare_data()
     # datamodule.setup('fit')

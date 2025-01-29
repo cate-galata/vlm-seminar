@@ -22,8 +22,8 @@ cls:
   dropout: 0.2
   weight_decay: 1.0e-6
   # hidden_dim: 1024
-  # finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/rsna/2025_01_17_17_58_24/epoch=12-step=3782.ckpt # CONVIRT
-  finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/rsna/2025_01_19_13_03_24/epoch=37-step=11057.ckpt # MEDCLIP
+  finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/rsna/2025_01_17_17_58_24/epoch=12-step=3782.ckpt # CONVIRT
+  # finetuned_checkpoint: /u/home/galc/VLP-Seminar/data/ckpts/FinetuneCLS/rsna/2025_01_19_13_03_24/epoch=37-step=11057.ckpt # MEDCLIP
 
 det:
     img_size: 224
