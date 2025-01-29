@@ -12,7 +12,7 @@ The main code is designed to fine-tune Vision-Language Pre-trained models for do
 This project is built upon the code from [MGCA](https://github.com/HKU-MedAI/MGCA). A special thanks to their repository.
 
 # 🗂️ Structure of the Repository
-Here are the base structures of our repository including the modifications for MedCLIP and ConVIRT: 
+Here are the base structures of our repository (including the modifications for MedCLIP [1] and ConVIRT[2]): 
 ```
 .
 ├── annotations # Stores the outputs of the preprocessing and annotations for each dataset.
@@ -186,6 +186,9 @@ Alternatively, you can directly run:
 ```bash
 python train_cls.py
 ```
+
+These experiments were run with MedCLIP using Resnet 50 backbone and ConVIRT using ViT backbone. 
+With these experiments we tried to reveal the role of balancing datasets and of using different backbone architectures.
 
 
 ### 2) Detection (Finetune)
