@@ -18,12 +18,15 @@ Here are the base structures of our repository (including the modifications for 
 ├── annotations # Stores the outputs of the preprocessing and annotations for each dataset.
 ├── configs # Configuration files for each dataset (e.g., chexpert.yaml, rsna.yaml).
 ├── data # Outputs for the model (checkpoints, log outputs).
-├── Finetune # Main code for fine-tuning the models.
-├── MedCLIP # GitHub Reposity of MedCLIP [3] modified to use ViT backbone on classification finetune task 
+├── Finetune # Main code for fine-tuning the models and post-processing of results.
+├── MedCLIP # GitHub Reposity of MedCLIP [3] modified to use ViT backbone on classification finetune task.
 ├── preprocess_datasets # Code to preprocess the downstream datasets.
-├── ViT-GradCAM # GitHub Repository [4] to plot saliency maps
+├── ViT-GradCAM # GitHub Repository [4] to plot saliency maps.
 └── README.md
 ```
+
+Our code mostly resides in the postprocess directory which includes a jupyter notebook. Here you can find our code to compute the confusion matrx of the test results on the RSNA dataset and to plot image embeddings for the CheXpert dataset. It also includes some experiments with plotting saliency maps, which in the end were obtained using GradCam (see the relevant directory for more details about the method).
+Both MedCLIP [1] with ResNet50 and ConVIRT[2] with the base Vision Transformer can be run from the main script train_cls.py. Our experiments with MedCLIP [1] using a Vision Transformer can be found in the MedCLIP directory.
 
 [3] https://github.com/RyanWangZf/MedCLIP/tree/main/medclip
 [4] https://github.com/Mikael17125/ViT-GradCAM
