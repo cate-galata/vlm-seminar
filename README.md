@@ -24,12 +24,13 @@ Here are the base structures of our repository (including the modifications for 
 
 Our code mostly resides in [`postprocess.ipynb`](Finetune/postprocess/postprocess.ipynb). Here you can find our code to compute the confusion matrix of the test results on the RSNA dataset and to plot image embeddings for the CheXpert and RSNA datasets using t-SNE. It also includes some experiments with plotting saliency maps, which in the end were obtained using [`GradCAM`](https://github.com/Mikael17125/ViT-GradCAM) (see the [`GradCAM`](ViT-GradCAM) directory for more details about the implementation).
 
-Both MedCLIP with ResNet50 and ConVIRT with the base Vision Transformer can be run from the classification finetuning script [`train_cls.py`](Finetune/train_cls.py) by modifying the appropriate `cls` entries of the config files in [`configs`](configs). Switching between the balanced and imbalanced versions of the RSNA dataset is also possible by modifying the `dataset` entires. Both RSNA balanced and imbalanced preprocessed datasets can be found in `annotations/rsna`. Details about the dataset balancing process can be found directly in the data preprocessing script [`rsna.ipynb`](preprocess_datasets/rsna.ipynb). 
+Both MedCLIP with ResNet50 and ConVIRT with the base Vision Transformer (ViT) can be run from the classification finetuning script [`train_cls.py`](Finetune/train_cls.py) by modifying the appropriate `cls` entries of the config files in [`configs`](configs). Switching between the balanced and imbalanced versions of the RSNA dataset is also possible by modifying the `dataset` entires. Both RSNA balanced and imbalanced preprocessed datasets can be found in `annotations/rsna`. Details about the dataset balancing process can be found directly in the data preprocessing script [`rsna.ipynb`](preprocess_datasets/rsna.ipynb). 
 
 The [`cls_model.py`](Finetune/methods/cls_model.py) is modified to save classification results which can then be used during postprocessing and implements a forward pass for the finetuning model which is used by GradCAM to compute the saliency maps. 
 
-Since the MedCLIP Vision Transformer backbone relies on the Swin Transformer and this was not implemented as part of the given code base, we worked directly with the [`MedCLIP repo`](https://github.com/RyanWangZf/MedCLIP/tree/main/medclip). Our implementation for finetuning on RSNA to perform classification can be found in the [`MedCLIP`](MedCLIP) directory.
+Since the MedCLIP ViT backbone relies on the Swin Transformer and this was not implemented as part of the given code base, we worked directly with the [`MedCLIP repo`](https://github.com/RyanWangZf/MedCLIP/tree/main/medclip). From this repo one can also download the pretrained checkpoints for MedCLIP. Our implementation for finetuning on RSNA to perform classification can be found in the [`MedCLIP`](MedCLIP) directory. 
 
+For the ConVIRT ViT pretrained checkpoints please contact me directly.
 
 # 🛠️ Preprocess Datasets
 Here we provide examples for two datasets: RSNA and Chexpert.
