@@ -4,7 +4,7 @@
 
 NOTE: This repository was modified to use both [MedCLIP](https://arxiv.org/pdf/2210.10163) and [ConVIRT](https://arxiv.org/pdf/2010.00747) method and finetune on RSNA and CheXpert5x200 classification task. 
 
-The main code is designed to fine-tune Vision-Language Pre-trained models for downstream tasks, including classification, segmentation, and detection. You can also develop additional downstream tasks based on this repository.
+The main code is designed to fine-tune Vision-Language Pre-trained models for downstream tasks, including classification, segmentation, and detection.
 
 This project is built upon the code from [MGCA](https://github.com/HKU-MedAI/MGCA). A special thanks to their repository.
 
@@ -17,18 +17,18 @@ Here are the base structures of our repository (including the modifications for 
 ├── data # Outputs for the model (checkpoints, log outputs).
 ├── Finetune # Main code for fine-tuning the models and post-processing of results.
 ├── MedCLIP # GitHub Reposity of MedCLIP modified to use ViT backbone on classification finetune task.
+├── poster # Final seminar poster with results.
 ├── preprocess_datasets # Code to preprocess the downstream datasets.
-├── ViT-GradCAM # GitHub Repository to plot saliency maps.
+├── ViT-GradCAM # Code to plot saliency maps.
 └── README.md
 ```
+You can find the final seminar poster with our results in the [`poster`](poster) folder.
 
-Our code mostly resides in [`postprocess.ipynb`](Finetune/postprocess/postprocess.ipynb). Here you can find our code to compute the confusion matrix of the test results on the RSNA dataset and to plot image embeddings for the CheXpert and RSNA datasets using t-SNE. It also includes some experiments with plotting saliency maps, which in the end were obtained using [`GradCAM`](https://github.com/Mikael17125/ViT-GradCAM) (see the [`GradCAM`](ViT-GradCAM) directory for more details about the implementation).
+In [`postprocess.ipynb`](Finetune/postprocess/postprocess.ipynb) you can find our code to compute the confusion matrix of the test results on the RSNA dataset and to plot image embeddings for the CheXpert and RSNA datasets using t-SNE.
 
-Both MedCLIP with ResNet50 and ConVIRT with the base Vision Transformer (ViT) can be run from the classification finetuning script [`train_cls.py`](Finetune/train_cls.py) by modifying the appropriate `cls` entries of the config files in [`configs`](configs). Switching between the balanced and imbalanced versions of the RSNA dataset is also possible by modifying the `dataset` entires. Both RSNA balanced and imbalanced preprocessed datasets can be found in `annotations/rsna`. Details about the dataset balancing process can be found directly in the data preprocessing script [`rsna.ipynb`](preprocess_datasets/rsna.ipynb). 
+Both MedCLIP with ResNet50 and ConVIRT with the base Vision Transformer (ViT) can be run from the classification finetuning script [`train_cls.py`](Finetune/train_cls.py). Switching between the balanced and imbalanced versions of the RSNA dataset is also possible. Both RSNA balanced and imbalanced preprocessed datasets can be found in `annotations/rsna`. Details about the dataset balancing process can be found in the data preprocessing script [`rsna.ipynb`](preprocess_datasets/rsna.ipynb). 
 
-The [`cls_model.py`](Finetune/methods/cls_model.py) is modified to save classification results which can then be used during postprocessing and implements a forward pass for the finetuning model which is used by GradCAM to compute the saliency maps. 
-
-Since the MedCLIP ViT backbone relies on the Swin Transformer and this was not implemented as part of the given code base, we worked directly with the [`MedCLIP repo`](https://github.com/RyanWangZf/MedCLIP/tree/main/medclip). From this repo one can also download the pretrained checkpoints for MedCLIP. Our implementation for finetuning on RSNA to perform classification can be found in the [`MedCLIP`](MedCLIP) directory. 
+We downloaded the pretrained checkpoints for MedCLIP directly from the official [`MedCLIP repository`](https://github.com/RyanWangZf/MedCLIP/tree/main/medclip). Our implementation for finetuning MedCLIP on RSNA to perform classification can be found in the [`MedCLIP`](MedCLIP) directory. 
 
 For the ConVIRT ViT pretrained checkpoints please contact me directly.
 
@@ -72,9 +72,7 @@ unzip chexpert-v10-small.zip -d ./
 ```
 
 # 🔧 Finetune
-Note: The training part of the code is based on PyTorch Lightning. If you are not familiar with PyTorch Lightning, you can look at the introduction here: [PyTorch Lightning Introduction](https://lightning.ai/docs/pytorch/stable/starter/introduction.html).
-
-With PyTorch Lightning, there is no need to write the trainer yourself; you can directly use the trainer in the Lightning module.
+Note: The training part of the code is based on [PyTorch Lightning](https://lightning.ai/docs/pytorch/stable/starter/introduction.html).
 
 ## Code Structure for Finetune
 The code structure for fine-tuning is divided into two main parts:
@@ -214,47 +212,4 @@ Alternatively, you can directly run:
 python train_seg.py
 ```
 
-
-# 💡 Some Tips for Debugging a Project
-
-## Debug Tools
-- **Use pdb**: The Python Debugger (pdb) is a powerful tool for debugging your code. You can set breakpoints, step through your code, and inspect variables. Here are some basic commands:
-    - **Use `pdb.set_trace()`**: You can insert `pdb.set_trace()` at the point in your code where you want to start the debugger. This will pause the execution and allow you to inspect the state of your program.
-    ```python
-    import pdb; pdb.set_trace()
-    ```
-    - `continue` or `c`: Continue execution until the next breakpoint.
-    - `step` or `s`: Execute the current line and stop at the first possible occasion.
-    - `next` or `n`: Continue execution until the next line in the current function is reached.
-    - `list` or `l`: Display the source code around the current line.
-    - `print` or `p`: Evaluate and print the expression.
-    - `quit` or `q`: Exit the debugger and terminate the program.
-
-## General Debugging Workflow
-
- **Dataset and DataLoader**
-
-   - **Data Paths and Format**: Confirm data paths are correct and files are in the expected format.
-   - **Data Loading and Output**: Test data loading; verify that the dataset and dataloader output is as expected (e.g., correct shapes, labels, and batch size).
-
-
-**Model Architecture and Configuration**
-
-   - **Model Structure**: Verify that the model architecture (e.g., encoder-decoder, CNN) is correct.
-   - **Input and Output**: Ensure the input and output shapes match the model’s requirements and the task at hand.
-   - **Loss Function**: Confirm that the loss function aligns with the task and the model’s output (e.g., cross-entropy for classification).
-
- **Training, Validation, and Testing Steps**
-
-   - **Training Step**:
-     - **Forward Pass**: Confirm the model can process a batch without errors.
-     - **Backward Pass**: Check gradients and ensure weights are updated with `optimizer.step()`.
-
-   - **Validation Step**: Ensure evaluation metrics are calculated without updating model weights.
-
-   - **Testing Step**: Similar to validation but on a separate test set; verify that metrics and predictions are as expected.
-
-
-
 # 🎉 End & Enjoy
-You can develop additional downstream tasks using this repository with various other datasets if you’re interested. 
